@@ -64,10 +64,13 @@ function freezeDetectionService() {
                 currentId = undefined
 
                 if (AppState.currentState !== 'active') return
+                // Logged-out screens can render without APP_STATE_UPDATE.
+                // A timeout alone does not establish a startup failure.
+                if (mErrorChain.length === 0) return
 
                 try {
                     let text =
-                        'App was unable to start. This is likely caused by a plugin.\n\n' +
+                        'One or more modules failed while starting Shrubcord.\n\n' +
                         'You can launch Recovery Mode in the Recovery menu.'
 
                     if (mErrorChain.length > 0) {
