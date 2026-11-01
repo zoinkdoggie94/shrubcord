@@ -45,10 +45,7 @@ async function updatePluginsWithRetries(ids: string[]) {
 
 registerInternalPlugin(manifest, {
     async start({ plugin }) {
-        if (Platform.OS === 'ios') {
-            await plugin.disable()
-            return
-        }
+        if (Platform.OS === 'ios') return
         ToastActionCreators.open('VALENCED_THEMES_STUB_UPDATE', {
             text: 'Downloading and installing updates for Theme plugins...',
         })
