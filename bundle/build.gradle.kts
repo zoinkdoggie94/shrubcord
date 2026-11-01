@@ -77,6 +77,8 @@ val bundleCommit = providers.exec {
 
 val installDependencies = tasks.register<DenoTask>("installDependencies") {
     description = "Installs the bundle's npm dependencies from the frozen lockfile."
+    outputs.doNotCacheIf("Dependency installation creates workspace-local node_modules") { true }
+    outputs.upToDateWhen { false }
     denoVersion = pinnedDenoVersion
     workDir = layout.projectDirectory
     arguments = listOf("install", "--frozen") + cachedOnly
