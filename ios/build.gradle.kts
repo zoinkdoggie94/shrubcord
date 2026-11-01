@@ -7,9 +7,6 @@ val isMacHost = System.getProperty("os.name").equals("Mac OS X", ignoreCase = tr
 val theosDir = providers.environmentVariable("THEOS")
     .orElse(providers.systemProperty("user.home").map { "$it/theos" })
 
-val coreFrameworkDir = rootProject.layout.projectDirectory
-    .dir("core/build/bin/iosArm64/debugFramework/ValencedCore.framework")
-
 val coreStaticLib = rootProject.layout.projectDirectory
     .file("core/build/bin/iosArm64/debugStatic/libValencedCore.a")
 
@@ -29,8 +26,8 @@ val packageTweak = tasks.register<Exec>("packageTweak") {
     inputs.files(bundleDir)
     doFirst { environment("VALENCED_BUNDLE_DIR", bundleDir.singleFile.absolutePath) }
     if (isMacHost) {
-        dependsOn(":core:linkDebugFrameworkIosArm64")
-        environment("VALENCED_CORE_FW", coreFrameworkDir.asFile.absolutePath)
+        dependsOn(":core:linkDebugStaticIosArm64")
+        environment("VALENCED_CORE_LIB", coreStaticLib.asFile.absolutePath)
     } else {
         dependsOn(":core:linkValencedCoreStaticIosArm64")
         environment("VALENCED_CORE_LIB", coreStaticLib.asFile.absolutePath)
@@ -38,7 +35,7 @@ val packageTweak = tasks.register<Exec>("packageTweak") {
 
     doFirst {
         check(file(theosDir.get()).isDirectory) { "Theos is not installed at ${theosDir.get()}" }
-        val nativeBinary = if (isMacHost) coreFrameworkDir.file("ValencedCore").asFile else coreStaticLib.asFile
+        val nativeBinary = coreStaticLib.asFile
         check(nativeBinary.isFile) { "Kotlin/Native output is missing: $nativeBinary" }
         check(bundleDir.singleFile.resolve("valenced.bundle").isFile) { "Release JS bundle is missing" }
     }

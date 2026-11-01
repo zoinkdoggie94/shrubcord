@@ -26,6 +26,10 @@ kotlin {
         val iosArm64 = iosArm64()
         iosSimulatorArm64()
 
+        iosArm64.binaries.staticLib {
+            baseName = "ValencedCore"
+        }
+
         iosArm64.binaries.framework {
             baseName = "ValencedCore"
             isStatic = true
