@@ -107,6 +107,9 @@ assembleReleaseBundle { mustRunAfter(assembleDebugBundle) }
 val testBundle = tasks.register<DenoTask>("testBundle") {
     group = "verification"
     description = "Runs the bundle's tests."
+    outputs.doNotCacheIf("Test results must be verified for the current sources") { true }
+    outputs.upToDateWhen { false }
+    sources.from(bundleSources)
     dependsOn(installDependencies)
     denoVersion = pinnedDenoVersion
     workDir = layout.projectDirectory
