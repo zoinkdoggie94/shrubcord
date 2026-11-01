@@ -2,7 +2,7 @@ import {
     callNativeMethod,
     callNativeMethodSync,
 } from '@valenced/modules/native'
-import { PluginSystemError } from './errors'
+import { PluginSystemError, toPluginSystemErrorPayload } from './errors'
 import type {
     MethodArgs,
     MethodName,
@@ -18,7 +18,7 @@ function unwrap<T>(raw: unknown): T {
     const envelope = raw as PluginMethodEnvelope<T>
 
     if (envelope && typeof envelope === 'object') {
-        if ('error' in envelope) throw new PluginSystemError(envelope.error)
+        if ('error' in envelope) throw new PluginSystemError(toPluginSystemErrorPayload(envelope.error))
         if ('result' in envelope) return envelope.result
     }
 
