@@ -356,21 +356,17 @@ export async function updatePlugins(ids: Iterable<string>): Promise<{
     const pending: string[] = []
     const errors: { id: string; error: unknown }[] = []
 
-    await Promise.all(
-        [...ids].map(async id => {
-            try {
-                // Optional dependencies left out stay out
-                const plan = await planInstall(id, {
-                    skipMissingOptionals: true,
-                })
-                const result = await installFromRepo(plan)
-                installed.push(...result.installed)
-                pending.push(...result.pending)
-            } catch (error) {
-                errors.push({ id, error })
-            }
-        }),
-    )
+    // Resolve each plan against the state left by the previous installation.
+    for (const id of new Set(ids)) {
+        try {
+            const plan = await planInstall(id, { skipMissingOptionals: true })
+            const result = await installFromRepo(plan)
+            installed.push(...result.installed)
+            pending.push(...result.pending)
+        } catch (error) {
+            errors.push({ id, error })
+        }
+    }
 
     return { installed, pending, errors }
 }

@@ -20,8 +20,13 @@ static ETagFetchKind GetWithETag(NSString *url,
                                  NSData * _Nullable * _Nullable outBytes,
                                  NSString * _Nullable * _Nullable outEtag,
                                  NSString * _Nullable * _Nullable outError) {
+    NSURL *parsedURL = [NSURL URLWithString:url];
+    if (!parsedURL.host.length || ![@[@"http", @"https"] containsObject:parsedURL.scheme.lowercaseString]) {
+        if (outError) *outError = @"Repository URL must use HTTP or HTTPS";
+        return ETagFetchKindFetched;
+    }
     NSMutableURLRequest *request =
-        [NSMutableURLRequest requestWithURL:[NSURL URLWithString:url]
+        [NSMutableURLRequest requestWithURL:parsedURL
                                 cachePolicy:NSURLRequestReloadIgnoringLocalAndRemoteCacheData
                             timeoutInterval:timeout];
     if (etag) [request setValue:etag forHTTPHeaderField:@"If-None-Match"];
@@ -40,7 +45,11 @@ static ETagFetchKind GetWithETag(NSString *url,
         responseError = error;
         dispatch_group_leave(group);
     }] resume];
-    dispatch_group_wait(group, DISPATCH_TIME_FOREVER);
+    if (dispatch_group_wait(group, dispatch_time(DISPATCH_TIME_NOW, (int64_t)((timeout + 5) * NSEC_PER_SEC))) != 0) {
+        [session invalidateAndCancel];
+        if (outError) *outError = @"Repository refresh timed out";
+        return ETagFetchKindFetched;
+    }
     [session finishTasksAndInvalidate];
 
     if (responseError) {

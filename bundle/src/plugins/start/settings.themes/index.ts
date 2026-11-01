@@ -1,3 +1,4 @@
+import { Platform } from 'react-native'
 import { ToastActionCreators } from '@valenced/discord/actions'
 import {
     isPluginSystemErrorPayload,
@@ -43,12 +44,16 @@ async function updatePluginsWithRetries(ids: string[]) {
 }
 
 registerInternalPlugin(manifest, {
-    start({ plugin }) {
+    async start({ plugin }) {
+        if (Platform.OS === 'ios') {
+            await plugin.disable()
+            return
+        }
         ToastActionCreators.open('VALENCED_THEMES_STUB_UPDATE', {
             text: 'Downloading and installing updates for Theme plugins...',
         })
 
-        updatePluginsWithRetries([manifest.id, apiManifest.id])
+        await updatePluginsWithRetries([manifest.id, apiManifest.id])
             .then(result => {
                 if (!result.errors.length) return
 
@@ -61,7 +66,7 @@ registerInternalPlugin(manifest, {
 
                 for (const error of result.errors) {
                     plugin.reportError(
-                        new Error(`Failed to update plugin ${error.id}`, {
+                        new Error(`Failed to update plugin ${error.id}: ${messageOf(error.error)}`, {
                             cause: error.error,
                         }),
                     )

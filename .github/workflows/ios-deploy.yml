@@ -122,7 +122,7 @@ jobs:
           restore-keys: core-v1-${{ runner.os }}-${{ runner.arch }}-${{ steps.apple-toolchain.outputs.digest }}-
 
       - name: Build packages
-        run: ./gradlew :ios:packageTweak --build-cache --parallel --stacktrace
+        run: ./gradlew :bundle:testBundle :ios:packageTweak --build-cache --parallel --stacktrace
 
       - name: Verify native core bindings
         run: |

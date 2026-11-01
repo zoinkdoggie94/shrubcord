@@ -80,7 +80,7 @@ static BOOL isSelfCall(void)
 {
     NSArray *address = [NSThread callStackReturnAddresses];
     Dl_info  info    = {0};
-    if (dladdr((void *) [address[2] longLongValue], &info) == 0)
+    if (address.count < 3 || dladdr((void *) [address[2] longLongValue], &info) == 0 || !info.dli_fname)
         return NO;
     NSString *path = [NSString stringWithUTF8String:info.dli_fname];
     return [path hasPrefix:NSBundle.mainBundle.bundlePath];
@@ -129,7 +129,14 @@ static BOOL isSelfCall(void)
 
     NSArray *paths    = [self URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask];
     NSURL   *lastPath = [paths lastObject];
-    return [lastPath URLByAppendingPathComponent:@"AppGroup"];
+    NSURL *container = [lastPath URLByAppendingPathComponent:@"AppGroup" isDirectory:YES];
+    NSError *error = nil;
+    if (!container || ![self createDirectoryAtURL:container withIntermediateDirectories:YES
+                                      attributes:nil error:&error]) {
+        ValencedLog(@"Cannot create sideloaded app group: %@", error);
+        return nil;
+    }
+    return container;
 }
 %end
 

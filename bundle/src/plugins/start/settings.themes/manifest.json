@@ -1,13 +1,18 @@
 {
   "id": "valenced.settings.themes",
   "name": "Themes",
-  "description": "This feature requires an update to be installed.",
+  "description": "Unavailable on iOS: the upstream theme engine requires native support and Discord 352.2 or later.",
   "author": {
     "name": "Shrubcord",
-    "links": [{ "url": "https://discord.com/invite/dtBTQHYSx4", "title": "Support Server" }]
+    "links": [
+      {
+        "url": "https://github.com/zoinkdoggie94/shrubcord/issues",
+        "title": "Support"
+      }
+    ]
   },
   "icon": "PaintPaletteIcon",
   "version": "0.0.0",
-  "enabledByDefault": true,
+  "enabledByDefault": false,
   "defaultSource": true
 }

@@ -1,3 +1,4 @@
+import { settleCleanups } from './cleanup'
 import { registerJSMethod } from '@valenced/modules/native'
 import { getErrorStack } from '@valenced/utils/error'
 import { sleepReject } from '@valenced/utils/promise'
@@ -445,14 +446,11 @@ async function cleanupPlugin(plugin: AnyPlugin) {
         return meta.handleError(e)
     }
 
-    const proms: Promise<any>[] = []
-
-    for (const cleanup of meta.cleanups)
+    for (const error of await settleCleanups(meta.cleanups)) {
         try {
-            proms.push(cleanup())
-        } catch (e) {
-            await handleStopError(e)
+            await handleStopError(error)
+        } catch (reportError) {
+            nativeLoggingHook(getErrorStack(reportError), 2)
         }
-
-    await Promise.all(proms)
+    }
 }
