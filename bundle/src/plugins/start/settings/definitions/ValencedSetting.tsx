@@ -1,6 +1,6 @@
 import TableRowAssetIcon from '@valenced/components/TableRowAssetIcon'
 import { FullVersion } from '~/constants'
-import ValencedIcon from '~assets/ValencedIcon'
+import ShrubcordIcon from '~assets/ShrubcordIcon'
 import { RouteNames, Setting } from '../constants'
 import defer * as ValencedSettingScreen from '../screens/ValencedSettingScreen'
 import type { SettingsItem } from '@valenced/discord/modules/settings'
@@ -8,8 +8,8 @@ import type { SettingsItem } from '@valenced/discord/modules/settings'
 const ValencedSetting: SettingsItem = {
     parent: null,
     type: 'route',
-    IconComponent: () => <TableRowAssetIcon id={ValencedIcon} />,
-    useTitle: () => 'Valenced',
+    IconComponent: () => <TableRowAssetIcon id={ShrubcordIcon} />,
+    useTitle: () => 'Shrubcord',
     useTrailing: () => FullVersion,
     screen: {
         route: RouteNames[Setting.Valenced],

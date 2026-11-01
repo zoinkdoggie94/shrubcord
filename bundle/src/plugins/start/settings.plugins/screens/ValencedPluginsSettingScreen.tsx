@@ -30,7 +30,7 @@ import {
     useState,
 } from 'react'
 import { Image, View } from 'react-native'
-import ValencedIcon from '~assets/ValencedIcon'
+import ShrubcordIcon from '~assets/ShrubcordIcon'
 import {
     belongsOnPage,
     matchInfoOfManifest,
@@ -102,8 +102,8 @@ const Filters: FilterAndSortActionSheetProps['filters'] = {
             !isPluginEssential(meta) || plugin.SettingsComponent !== undefined,
     },
     Internal: {
-        icon: ValencedIcon,
-        desc: 'Included with Valenced.',
+        icon: ShrubcordIcon,
+        desc: 'Included with Shrubcord.',
         filter: (_, meta) => isPluginInternal(meta),
     },
 } satisfies FilterAndSortActionSheetProps['filters']

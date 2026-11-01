@@ -119,6 +119,7 @@ export default async function build(dev = Dev, log = true) {
         treeshake: true,
         moduleTypes: {
             '.webp': 'dataurl',
+            '.png': 'dataurl',
         },
         plugins: [
             asRequire(),
@@ -187,7 +188,7 @@ export default async function build(dev = Dev, log = true) {
         file: `${OutDir}/valenced.js`,
         format: 'iife',
         keepNames: true,
-        postFooter: `//# sourceURL=Valenced`,
+        postFooter: `//# sourceURL=Shrubcord`,
         topLevelVar: true,
     })
 

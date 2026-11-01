@@ -1,4 +1,4 @@
-import ValencedIcon from '~assets/ValencedIcon'
+import ShrubcordIcon from '~assets/ShrubcordIcon'
 // TODO(PalmDevs): switch to external fetches
 import Data from './data.json'
 import type { ImageSourcePropType } from 'react-native'
@@ -6,9 +6,9 @@ import type { ImageSourcePropType } from 'react-native'
 // TODO(PalmDevs): possibly fetch from external source?
 export const Badges = {
     valenced_team: {
-        label: 'Valenced Team',
-        description: 'This user is a Valenced team member.',
-        icon: ValencedIcon,
+        label: 'Shrubcord Team',
+        description: 'This user is a Shrubcord team member.',
+        icon: ShrubcordIcon,
         bnw: true,
         showDialog: true,
     },

@@ -4,7 +4,8 @@ An iOS-only Discord modification based on Valenced. Bundle ID: `com.shrubhub.shr
 
 Includes the inherited plugin and appearance system, plus a recovery cache-reset action,
 a fix for shake-menu reloads, and fewer repeated filesystem reads for missing caches.
-Internal Valenced module names remain for compatibility. Some settings still use upstream branding.
+Settings, bundled plugin descriptions, recovery dialogs and artwork use Shrubcord branding.
+Internal Valenced module names remain for plugin and storage compatibility.
 Android sources are retained as upstream reference; Shrubcord release automation builds iOS only.
 
 ## Automatic IPA releases

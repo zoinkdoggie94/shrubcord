@@ -206,7 +206,7 @@ static const NSTimeInterval UpdaterTimeoutCached = 5.0;
 
 - (void)showUpdateDialog {
     UIAlertController *alert =
-        [UIAlertController alertControllerWithTitle:@"Valenced Update Downloaded"
+        [UIAlertController alertControllerWithTitle:@"Shrubcord Update Downloaded"
                                             message:@"A reload is required for changes to take effect."
                                      preferredStyle:UIAlertControllerStyleAlert];
     [alert addAction:[UIAlertAction actionWithTitle:@"Reload" style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
@@ -218,7 +218,7 @@ static const NSTimeInterval UpdaterTimeoutCached = 5.0;
 
 - (void)showSuccessDialog {
     UIAlertController *alert =
-        [UIAlertController alertControllerWithTitle:@"Valenced Update Successful"
+        [UIAlertController alertControllerWithTitle:@"Shrubcord Update Successful"
                                             message:@"A reload is required for changes to take effect."
                                      preferredStyle:UIAlertControllerStyleAlert];
     [alert addAction:[UIAlertAction actionWithTitle:@"Reload" style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
@@ -230,11 +230,11 @@ static const NSTimeInterval UpdaterTimeoutCached = 5.0;
 
 - (void)showErrorDialog:(NSString *)error {
     NSString *message = [NSString stringWithFormat:
-                         @"Unable to download the latest version of Valenced.\n"
+                         @"Unable to download the latest version of Shrubcord.\n"
                          @"This is usually caused by bad network connection.\n\n"
                          @"Error: %@", error ?: @"Unknown error"];
     UIAlertController *alert =
-        [UIAlertController alertControllerWithTitle:@"Valenced Update Failed"
+        [UIAlertController alertControllerWithTitle:@"Shrubcord Update Failed"
                                             message:message
                                      preferredStyle:UIAlertControllerStyleAlert];
     [alert addAction:[UIAlertAction actionWithTitle:@"Dismiss" style:UIAlertActionStyleCancel handler:nil]];

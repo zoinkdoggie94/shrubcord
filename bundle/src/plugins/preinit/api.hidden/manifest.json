@@ -1,9 +1,9 @@
 {
   "id": "valenced.api.hidden",
   "name": "Developer Mode",
-  "description": "Exposes internal Valenced APIs for debugging.",
+  "description": "Exposes internal Shrubcord APIs for debugging.",
   "author": {
-    "name": "Valenced",
+    "name": "Shrubcord",
     "links": [{ "url": "https://discord.com/invite/dtBTQHYSx4", "title": "Support Server" }]
   },
   "icon": "WrenchIcon",

@@ -1,9 +1,9 @@
 {
   "id": "valenced.settings",
   "name": "Settings",
-  "description": "Settings UI for Valenced.",
+  "description": "Settings UI for Shrubcord.",
   "author": {
-    "name": "Valenced",
+    "name": "Shrubcord",
     "links": [{ "url": "https://discord.com/invite/dtBTQHYSx4", "title": "Support Server" }]
   },
   "icon": "SettingsIcon",

@@ -1,9 +1,9 @@
 {
   "id": "valenced.api",
   "name": "Plugin API",
-  "description": "Provides the Valenced plugin API.",
+  "description": "Provides the Shrubcord plugin API.",
   "author": {
-    "name": "Valenced",
+    "name": "Shrubcord",
     "links": [{ "url": "https://discord.com/invite/dtBTQHYSx4", "title": "Support Server" }]
   },
   "icon": "PollsIcon",

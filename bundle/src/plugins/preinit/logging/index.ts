@@ -28,7 +28,7 @@ if (__DEV__) {
                 performance.now() - tsInit,
             )
             logger.log(
-                `✨ Valenced. Supercharge your Discord experience. (${FullVersion} (${BuildEnvironment}))`,
+                `Shrubcord. Supercharge your Discord experience. (${FullVersion} (${BuildEnvironment}))`,
             )
         },
     })

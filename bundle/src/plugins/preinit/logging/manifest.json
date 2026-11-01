@@ -1,9 +1,9 @@
 {
   "id": "valenced.logging",
   "name": "Logging",
-  "description": "Logs assisting Valenced developers.",
+  "description": "Logs assisting Shrubcord developers.",
   "author": {
-    "name": "Valenced",
+    "name": "Shrubcord",
     "links": [{ "url": "https://discord.com/invite/dtBTQHYSx4", "title": "Support Server" }]
   },
   "icon": "PaperIcon",

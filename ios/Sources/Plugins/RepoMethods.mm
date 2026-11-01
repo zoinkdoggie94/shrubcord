@@ -15,8 +15,8 @@ static NSDictionary *internalRepoJSPayload(void) {
         @"url": INTERNAL_REPO_URL,
         @"enabled": @YES,
         @"internal": @YES,
-        @"name": @"Valenced",
-        @"description": @"Plugins built into Valenced.",
+        @"name": @"Shrubcord",
+        @"description": @"Plugins built into Shrubcord.",
         @"icon": [NSNull null],
     };
 }

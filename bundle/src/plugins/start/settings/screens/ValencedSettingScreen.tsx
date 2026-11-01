@@ -3,7 +3,7 @@ import { styles } from '@valenced/components/_'
 import { Design } from '@valenced/discord/design'
 import { SettingListRenderer } from '@valenced/discord/modules/settings/renderer'
 import { Image, Linking, ScrollView, StyleSheet, View } from 'react-native'
-import ValencedDonate from '~assets/ValencedDonate'
+import ShrubcordIcon from '~assets/ShrubcordIcon'
 import { Setting } from '../constants'
 
 const { Button, Card, Stack, Text } = Design
@@ -21,7 +21,7 @@ export default function ValencedSettingScreen() {
                             type: 'list',
                             sections: [
                                 {
-                                    label: 'Valenced',
+                                    label: 'Shrubcord',
                                     settings: [
                                         Setting.ValencedVersion,
                                         Setting.LoaderVersion,
@@ -87,8 +87,8 @@ function DonateCard() {
                     {
                         opacity: 0.5,
                         experimental_backgroundImage:
-                            'linear-gradient(166deg, rgba(29, 146, 255, 0.33), rgba(62, 47, 145, 0)), ' +
-                            'linear-gradient(45deg, rgba(47, 125, 145, 0),rgba(65, 22, 255, 0.5)))',
+                            'linear-gradient(166deg, rgba(34, 197, 94, 0.33), rgba(62, 47, 145, 0)), ' +
+                            'linear-gradient(45deg, rgba(47, 125, 145, 0),rgba(21, 128, 61, 0.5)))',
                     },
                 ]}
             />
@@ -100,11 +100,11 @@ function DonateCard() {
                                 variant="heading-lg/semibold"
                                 color="text-strong"
                             >
-                                Support Valenced
+                                Support Shrubcord
                             </Text>
                             <Text variant="text-md/medium">
-                                You can support the development of Valenced by
-                                donating or contributing!
+                                Help improve Shrubcord by
+                                contributing code or reporting issues.
                             </Text>
                         </Stack>
                         <Stack spacing={12} direction="horizontal">
@@ -133,7 +133,7 @@ function DonateCard() {
                         </Stack>
                     </Stack>
                     <Image
-                        source={ValencedDonate}
+                        source={ShrubcordIcon}
                         style={cardStyles.illustration}
                     />
                 </Stack>

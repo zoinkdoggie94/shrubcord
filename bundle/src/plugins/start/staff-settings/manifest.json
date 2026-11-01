@@ -3,7 +3,7 @@
   "name": "Staff Settings",
   "description": "Allows accessing Discord's Staff Settings.",
   "author": {
-    "name": "Valenced",
+    "name": "Shrubcord",
     "links": [{ "url": "https://discord.com/invite/dtBTQHYSx4", "title": "Support Server" }]
   },
   "icon": "StaffBadgeIcon",

@@ -55,7 +55,7 @@ function LicenseAlert() {
 
     return (
         <Design.AlertModal
-            title="License"
+            title="Shrubcord License"
             content={
                 <ScrollView
                     fadingEdgeLength={32}
@@ -67,6 +67,7 @@ function LicenseAlert() {
                         selectable
                         style={{ textAlign: 'left' }}
                     >
+                        {'Shrubcord is based on Valenced. Original copyright notices and GPL-3.0 licensing are preserved.\n\n'}
                         {license ?? 'Fetching...'}
                     </Design.Text>
                 </ScrollView>

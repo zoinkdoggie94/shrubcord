@@ -341,9 +341,9 @@ NSString *PluginErrorCodeString(PluginErrorCode code) {
 
         PluginManifest *api =
             [PluginManifest manifestWithId:@"valenced.api"
-                                      name:@"Valenced Plugin API"
-                               description:@"Provides the Valenced plugin API."
-                                    author:@"Valenced"
+                                      name:@"Shrubcord Plugin API"
+                               description:@"Provides the Shrubcord plugin API."
+                                    author:@"Shrubcord"
                                       icon:nil
                               dependencies:@{}
                                    version:apiVer];
@@ -1353,7 +1353,7 @@ NSDictionary *ListUpdatesForRepo(NSString *url, PluginVersion * (^installedVersi
         PluginRecord *record = [weakLoader records][pluginId];
         if (!record) return @{@"error": [NSString stringWithFormat:@"Unknown plugin: '%@'", pluginId]};
         if (record.isInternal && !SourcesStoreAll()[pluginId]) {
-            return @{@"error": [NSString stringWithFormat:@"Plugin %@ is internal and updates with Valenced itself", pluginId]};
+            return @{@"error": [NSString stringWithFormat:@"Plugin %@ is internal and updates with Shrubcord itself", pluginId]};
         }
         char *error = NULL;
         char *sourceJson = ValencedCore_SourcesStoreSetHeld(pluginId.UTF8String, [heldValue boolValue] ? 1 : 0, &error);

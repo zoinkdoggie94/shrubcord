@@ -30,6 +30,6 @@ registerSettingsItems({
 })
 
 registerSettingsSection('VALENCED', {
-    label: 'Valenced',
+    label: 'Shrubcord',
     settings: [Setting.Valenced],
 })

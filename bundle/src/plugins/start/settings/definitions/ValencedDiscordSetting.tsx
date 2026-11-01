@@ -6,7 +6,7 @@ import type { SettingsItem } from '@valenced/discord/modules/settings'
 const ValencedDiscordSetting: SettingsItem = {
     parent: Setting.Valenced,
     IconComponent: () => <TableRowAssetIcon name="Discord" />,
-    useTitle: () => 'Discord Server',
+    useTitle: () => 'Help & Feedback',
     useDescription: () => __BUILD_DISCORD_SERVER_URL__,
     onPress: () => {
         Linking.openURL(__BUILD_DISCORD_SERVER_URL__)

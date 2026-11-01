@@ -25,7 +25,7 @@ export function createOptionsFactory(
         const opts = new Function(
             'valenced',
             'plugin',
-            `return ${script}\n//# sourceURL=Valenced:Plugin:${id}`,
+            `return ${script}\n//# sourceURL=Shrubcord:Plugin:${id}`,
         )(
             pUnscopedApi,
             // See types.consumers.ts

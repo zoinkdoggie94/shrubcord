@@ -1,9 +1,9 @@
 {
   "id": "valenced.recovery",
   "name": "Recovery",
-  "description": "Handles errors and provides troubleshooting options for Valenced.",
+  "description": "Handles errors and provides troubleshooting options for Shrubcord.",
   "author": {
-    "name": "Valenced",
+    "name": "Shrubcord",
     "links": [{ "url": "https://discord.com/invite/dtBTQHYSx4", "title": "Support Server" }]
   },
   "icon": "ShieldIcon",
