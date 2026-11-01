@@ -71,6 +71,14 @@ jobs:
         if: steps.cache.outputs.cache-hit != 'true'
         uses: Randomblock1/theos-action@v1
 
+      - name: Ensure packaging tools on cache hits
+        env:
+          HOMEBREW_NO_AUTO_UPDATE: 1
+        run: |
+          command -v ldid >/dev/null || brew install ldid
+          command -v dpkg-deb >/dev/null || brew install dpkg
+          brew list --versions make >/dev/null || brew install make
+
       - name: Set GNU Make path
         run: |
           echo "PATH=$(brew --prefix make)/libexec/gnubin:$PATH" >> $GITHUB_ENV
