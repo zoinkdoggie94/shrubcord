@@ -78,8 +78,20 @@ BOOL isHermesBytecode(NSData *data) {
 }
 
 void showRecoveryAlert(UIViewController *presenter) {
+    // Resolve the presenter before creating handlers so shake-triggered reloads work.
+    if (![NSThread isMainThread]) {
+        dispatch_async(dispatch_get_main_queue(), ^{ showRecoveryAlert(presenter); });
+        return;
+    }
+    if (!presenter) {
+        for (UIWindow *window in [UIApplication sharedApplication].windows) {
+            if (window.isKeyWindow) { presenter = window.rootViewController; break; }
+        }
+        while (presenter.presentedViewController) presenter = presenter.presentedViewController;
+    }
+    if (!presenter || [presenter isKindOfClass:[UIAlertController class]]) return;
     UIAlertController *alert =
-        [UIAlertController alertControllerWithTitle:@"Valenced Recovery Options"
+        [UIAlertController alertControllerWithTitle:@"Shrubcord Recovery Options"
                                             message:nil
                                      preferredStyle:UIAlertControllerStyleActionSheet];
 
@@ -93,6 +105,12 @@ void showRecoveryAlert(UIViewController *presenter) {
         NSURL *marker = [pluginsRoot URLByAppendingPathComponent:DEFAULTS_ONLY_MARKER_FILE];
         [[NSFileManager defaultManager] createDirectoryAtURL:pluginsRoot withIntermediateDirectories:YES attributes:nil error:nil];
         [@"" writeToURL:marker atomically:YES encoding:NSUTF8StringEncoding error:nil];
+        reloadApp(presenter);
+    }]];
+
+    [alert addAction:[UIAlertAction actionWithTitle:@"Reset Caches & Restart" style:UIAlertActionStyleDestructive handler:^(UIAlertAction *action) {
+        NSURL *cache = [getValencedDirectory() URLByAppendingPathComponent:CACHE_DIR];
+        [[NSFileManager defaultManager] removeItemAtURL:cache error:nil];
         reloadApp(presenter);
     }]];
 
@@ -153,11 +171,11 @@ void RegisterRecoveryBridgeMethods(void) {
         NSString *deviceModel = [UIDevice currentDevice].model;
 
         NSString *message = [NSString stringWithFormat:
-                             @"Valenced: %@\nDiscord: %@\nDevice: %@\n\n\n%@",
+                             @"Shrubcord: %@\nDiscord: %@\nDevice: %@\n\n\n%@",
                              version, discordVersion, deviceModel, errorString];
 
         dispatch_async(dispatch_get_main_queue(), ^{
-            UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"Valenced Error"
+            UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"Shrubcord Error"
                                                                            message:message
                                                                     preferredStyle:UIAlertControllerStyleAlert];
 

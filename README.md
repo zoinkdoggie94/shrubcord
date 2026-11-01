@@ -1,49 +1,40 @@
-<p align="center">
-    <img
-        width="128px"
-        src="assets/logo.svg"
-    >
-    <h1 align="center">Valenced</h1>
-    <p align="center"><strong>Supercharge your Discord experience.</strong> A client modification for Discord mobile.</p>
-    <br>
-    <div align="center">
-        <a href="https://discord.com/invite/dtBTQHYSx4">
-            <picture>
-                <source height="32px" media="(prefers-color-scheme: dark)" srcset="https://user-images.githubusercontent.com/13122796/178032563-d4e084b7-244e-4358-af50-26bde6dd4996.png" />
-                <img height="32px" src="https://user-images.githubusercontent.com/13122796/178032563-d4e084b7-244e-4358-af50-26bde6dd4996.png" />
-            </picture>
-        </a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-        <a href="https://github.com/Valenced">
-            <picture>
-                <source height="32px" media="(prefers-color-scheme: dark)" srcset="https://i.ibb.co/dMMmCrW/Git-Hub-Mark.png" />
-                <img height="32px" src="https://i.ibb.co/9wV3HGF/Git-Hub-Mark-Light.png" />
-            </picture>
-        </a>
-    </div>
-</p>
+# Shrubcord
 
-## ❓ About
+An iOS-only Discord modification based on Valenced. Bundle ID: `com.shrubhub.shrubcord`.
 
-Valenced is a client modification for Discord mobile. This repository is a monorepo that builds Valenced.
+Includes the inherited plugin and appearance system, plus a recovery cache-reset action,
+a fix for shake-menu reloads, and fewer repeated filesystem reads for missing caches.
+Internal Valenced module names remain for compatibility. Some settings still use upstream branding.
+Android sources are retained as upstream reference; Shrubcord release automation builds iOS only.
 
-## ✨ Features
+## Automatic IPA releases
 
-- **🔌 Plugins**: Extend Discord with custom features
-- **🎨 Themes, fonts, icons & emojis**: Customize Discord's appearance to your liking
-- **🧪 Experiments**: Try out Discord's new features before they're rolled out
+Add a repository Actions secret named `DISCORD_IPA_URL` containing a direct HTTPS URL
+to a decrypted Discord IPA. In GitHub: Settings → Secrets and variables → Actions →
+New repository secret. Expiring download URLs must be renewed before builds.
+Never commit the URL or put it in an Actions variable.
 
-## 👷 Codebase
+Every push to `main` builds the current tweak and publishes an IPA in GitHub Releases.
+After setting the secret, run **Shrubcord Release** manually to retry without a code change.
+Builds use Java 25, Deno, Kotlin/Native and Theos on a macOS runner.
+No upstream apt repository dispatch or Android signing secrets are required.
 
-Valenced uses TypeScript and Kotlin Multiplatform to share code between platforms. The codebase is split into four modules:
+The packaged app is unsigned and needs signing with your chosen iOS sideloading tool.
+Changing the bundle ID may affect push notifications, keychain access, app groups and extensions;
+these need verification with your signing setup. Discord 351.0 compatibility and performance
+have not been verified on a device.
 
-- **[bundle](bundle)**: Hermes bytecode that runs inside official Discord clients. It requires the loaders to run, and is built into them in each release.
-- **[core](core)**: Shared Kotlin Multiplatform codebase for the loaders, containing the plugin system, and other shared code.
-- **[android](android)**: Android loader and native plugin API, which is an Xposed module loading the Valenced bundle into Discord.
-  - **[android/patches](android/patches)**: [Reseam](https://reseam.app) patches Valenced Manager applies to Discord to load the Xposed module.
-- **[ios](ios)**: iOS loader, which is a tweak loading the Valenced bundle into Discord.
+## Recovery
 
-## 📄 License
+Shake the device to open Shrubcord Recovery Options. Reload and recovery mode restart
+the app; reopen it afterward. **Reset Caches & Restart** removes loader caches
+without deleting plugin configuration.
 
-This project is licensed under the GPL-3.0 License. See [LICENSE](LICENSE) for details.
+## Development and attribution
 
-[android/patches](android/patches) is licensed under the AGPL-3.0, see [its license](android/patches/LICENSE) and [notice](android/patches/NOTICE).
+`./gradlew :ios:packageTweak` builds the loader and bundled JS on macOS with Theos.
+`./gradlew :bundle:testBundle` runs bundle checks.
+`python3 -m unittest discover -s scripts -p 'test_*.py'` checks IPA identity packaging.
+
+Based on [Valenced](https://github.com/Valenced). Original copyright notices and licenses
+are preserved. See [LICENSE](LICENSE) (GPL-3.0) and the licenses in individual modules.

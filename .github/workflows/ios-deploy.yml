@@ -1,13 +1,13 @@
 name: "iOS: Deploy Build"
-run-name: ${{ github.event.inputs.release == 'true' && 'Release' || 'Build' }} for ${{ github.event.inputs.ipa_url }}
+run-name: Shrubcord iOS build
 
 on:
   workflow_dispatch:
     inputs:
       ipa_url:
         default: ""
-        description: "Direct link to the decrypted IPA"
-        required: true
+        description: "Optional URL override; normally use the DISCORD_IPA_URL secret"
+        required: false
         type: string
       release:
         description: "Release the build"
@@ -19,6 +19,9 @@ on:
         required: true
         type: boolean
   workflow_call:
+    secrets:
+      DISCORD_IPA_URL:
+        required: false
     inputs:
       ipa_url:
         required: true
@@ -33,6 +36,9 @@ on:
       caller_workflow:
         required: false
         type: string
+
+permissions:
+  contents: read
 
 env:
   GH_TOKEN: ${{ github.token }}
@@ -49,35 +55,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           submodules: true
-
-      - name: Download Tweak
-        if: inputs.caller_workflow != 'ci'
-        run: |
-          set +e
-
-          release_info=$(gh api --header 'Accept: application/vnd.github+json' repos/${{ github.repository }}/releases/latest)
-          status_code=$(echo $release_info | jq -r ".status")
-
-          if [ "$status_code" != "null" ]; then
-            echo "No releases found or request failed, status code: $status_code"
-            echo "DEB_DOWNLOADED=false" >> $GITHUB_ENV
-            exit 0
-          fi
-
-          set -e
-
-          release_version=$(echo "$release_info" | jq -r '.assets[] | select(.name | contains("iphoneos-arm64.deb")) | .name' | grep -o '_[0-9.]\+_' | tr -d '_')
-          control_version=$(grep '^Version:' ios/control | cut -d ' ' -f 2)
-
-          if [ "$release_version" = "$control_version" ]; then
-            echo "Versions match. Downloading DEB files..."
-            echo "$release_info" | jq -r '.assets[] | select(.name | endswith("arm64.deb")) | .browser_download_url' | xargs -I {} curl -L -O {}
-            echo "DEB_DOWNLOADED=true" >> $GITHUB_ENV
-          else
-            echo "Versions do not match. No files will be downloaded."
-            echo "DEB_DOWNLOADED=false" >> $GITHUB_ENV
-            exit 0
-          fi
 
       - name: Check cache
         if: env.DEB_DOWNLOADED == 'false'
@@ -104,7 +81,7 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: 17
+          java-version: 25
           cache: gradle
 
       - name: Cache Kotlin/Native
@@ -154,8 +131,19 @@ jobs:
           merge-multiple: true
 
       - name: Download Discord IPA
+        env:
+          IPA_URL: ${{ secrets.DISCORD_IPA_URL || inputs.ipa_url }}
         run: |
-          curl -L -o discord.ipa ${{ github.event.inputs.ipa_url || inputs.ipa_url }}
+          if [ -z "$IPA_URL" ]; then
+            echo "::error::Set the DISCORD_IPA_URL repository secret to a fresh decrypted IPA URL."
+            exit 1
+          fi
+          echo "::add-mask::$IPA_URL"
+          if ! curl --fail --location --silent --retry 2 --proto '=https' --proto-redir '=https' --output discord.ipa "$IPA_URL"; then
+            echo "::error::IPA download failed; check or renew DISCORD_IPA_URL."
+            exit 1
+          fi
+          unzip -tq discord.ipa > /dev/null
 
       - name: Clone OpenInDiscord
         uses: actions/checkout@v4
@@ -172,7 +160,7 @@ jobs:
             -sdk iphoneos \
             CONFIGURATION_BUILD_DIR="build" \
             PRODUCT_NAME="OpenInDiscord" \
-            PRODUCT_BUNDLE_IDENTIFIER="com.hammerandchisel.discord.OpenInDiscord" \
+            PRODUCT_BUNDLE_IDENTIFIER="com.shrubhub.shrubcord.OpenInDiscord" \
             PRODUCT_MODULE_NAME="OpenInDiscordExt" \
             SKIP_INSTALL=NO \
             DEVELOPMENT_TEAM="" \
@@ -196,6 +184,9 @@ jobs:
       - name: Inject tweak and extension
         run: |
           cyan -uwsgq -i discord.ipa -o ${{ env.APP_NAME }}.ipa -f ${{ env.ROOTLESS_DEB_FILE_NAME }} OpenInDiscord/build/OpenInDiscord.appex
+
+      - name: Set Shrubcord identity
+        run: python3 scripts/brand_ipa.py "${{ env.APP_NAME }}.ipa"
 
       - name: Upload ipa as artifact
         uses: actions/upload-artifact@v4
@@ -249,7 +240,9 @@ jobs:
         id: create_release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v${{ env.DISCORD_VERSION }}
+          tag_name: shrubcord-${{ env.DISCORD_VERSION }}-${{ github.run_number }}
+          target_commitish: ${{ github.sha }}
+          name: Shrubcord ${{ env.DISCORD_VERSION }} (build ${{ github.run_number }})
           files: |
             ${{ env.ROOTLESS_DEB_FILE_NAME }}
             ${{ env.APP_NAME }}.ipa
@@ -260,25 +253,3 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Update apt repo
-        uses: actions/github-script@v7
-        with:
-          github-token: ${{ secrets.WORKFLOW_DISPATCH_TOKEN }}
-          script: |
-            const assets = JSON.parse('${{ steps.create_release.outputs.assets }}');
-            const debAsset = assets.find(asset => asset.name === '${{ env.ROOTLESS_DEB_FILE_NAME }}');
-
-            if (!debAsset) {
-              core.setFailed('Could not find DEB asset in release');
-              return;
-            }
-
-            await github.rest.repos.createDispatchEvent({
-              owner: 'castdrian',
-              repo: 'apt-repo',
-              event_type: 'package-update',
-              client_payload: {
-                package_url: debAsset.browser_download_url,
-                package_name: '${{ env.ROOTLESS_DEB_FILE_NAME }}'
-              }
-            });

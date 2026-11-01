@@ -161,9 +161,14 @@ void RegisterCachesMethods(void) {
 
     __block NSDictionary *modulesCache = nil;
     __block NSDictionary *assetsCache = nil;
+    __block BOOL modulesCacheLoaded = NO;
+    __block BOOL assetsCacheLoaded = NO;
 
     bridgeHandlers()[@"valenced.caches.modules.read"] = ^NSDictionary *(NSArray *args) {
-        if (!modulesCache) modulesCache = ModulesCacheLoadFromFileOrNull(modulesCacheFile);
+        if (!modulesCacheLoaded) {
+            modulesCache = ModulesCacheLoadFromFileOrNull(modulesCacheFile);
+            modulesCacheLoaded = YES;
+        }
         return @{@"result": modulesCache ?: [NSNull null]};
     };
 
@@ -181,7 +186,10 @@ void RegisterCachesMethods(void) {
     };
 
     bridgeHandlers()[@"valenced.caches.assets.read"] = ^NSDictionary *(NSArray *args) {
-        if (!assetsCache) assetsCache = AssetsCacheLoadFromFileOrNull(assetsCacheFile);
+        if (!assetsCacheLoaded) {
+            assetsCache = AssetsCacheLoadFromFileOrNull(assetsCacheFile);
+            assetsCacheLoaded = YES;
+        }
         return @{@"result": assetsCache ?: [NSNull null]};
     };
 

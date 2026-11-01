@@ -1,10 +1,10 @@
-Package: app.valenced.tweak
-Name: ValencedTweak
+Package: com.shrubhub.shrubcord.tweak
+Name: Shrubcord
 Version: 1.0.0
 Architecture: iphoneos-arm
-Description: A tweak to inject Valenced into Discord
-Maintainer: cocobo1
-Author: Valenced
+Description: A tweak to inject Shrubcord into Discord
+Maintainer: zoinkdoggie94
+Author: Shrubcord contributors; based on Valenced
 Icon: <https://github.com/Valenced.png>
 Section: Tweaks
 Depends: mobilesubstrate (>= 0.9.5000)
