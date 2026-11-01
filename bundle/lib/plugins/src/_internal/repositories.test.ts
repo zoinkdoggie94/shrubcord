@@ -6,7 +6,7 @@ vi.mock('@valenced/modules/native', () => ({ registerJSMethod: vi.fn() }))
 vi.mock('./native', () => ({ callPluginSystemMethod: call }))
 import { updatePlugins } from './repositories'
 
-beforeEach(() => call.mockReset())
+beforeEach(() => { call.mockReset() })
 
 test('finishes each install before resolving the next plugin and deduplicates IDs', async () => {
     const events: string[] = []
