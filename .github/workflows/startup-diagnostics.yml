@@ -1,0 +1,42 @@
+name: Inspect startup crash
+on:
+  push:
+    paths: ['.github/workflows/startup-diagnostics.yml']
+  workflow_dispatch:
+permissions:
+  actions: read
+  contents: read
+jobs:
+  inspect:
+    runs-on: macos-15
+    timeout-minutes: 10
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Inspect released native loader
+        run: |
+          mkdir -p inspect/deb
+          cd inspect
+          gh run download 41284987511 --repo "$GITHUB_REPOSITORY" --name "rootless package"
+          deb=$(find . -maxdepth 1 -name '*.deb' -print -quit)
+          cd deb
+          ar -x "../$deb"
+          tar -xf data.tar.*
+          binary=$(find . -name 'ValencedTweak.dylib' -print -quit)
+          echo "Loader UUID"
+          dwarfdump --uuid "$binary"
+          echo "Unresolved core symbols"
+          nm -u "$binary" | grep 'ValencedCore_' || true
+          echo "Defined core symbols"
+          nm -gU "$binary" | grep 'ValencedCore_' || true
+          echo "Crash addresses"
+          atos -arch arm64 -o "$binary" -l 0 0xc49bcc 0xc4d96c 0xc3f5fc
+          otool -tvV "$binary" > disassembly.txt
+          python3 - <<'PY'
+          from pathlib import Path
+          lines = Path("disassembly.txt").read_text().splitlines()
+          for index, line in enumerate(lines):
+              if any(address in line.lower() for address in ("0000000000c49bc", "0000000000c4d96", "0000000000c3f5f")):
+                  print("\n".join(lines[max(0,index-12):index+8]))
+          PY
