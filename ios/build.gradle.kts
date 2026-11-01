@@ -24,7 +24,7 @@ val packageTweak = tasks.register<Exec>("packageTweak") {
     description = "Builds the ValencedTweak deb with Theos."
 
     workingDir = layout.projectDirectory.asFile
-    commandLine("make", "package")
+    commandLine("make", "-j${Runtime.getRuntime().availableProcessors()}", "package")
     environment("THEOS", theosDir.get())
     inputs.files(bundleDir)
     doFirst { environment("VALENCED_BUNDLE_DIR", bundleDir.singleFile.absolutePath) }
@@ -36,7 +36,12 @@ val packageTweak = tasks.register<Exec>("packageTweak") {
         environment("VALENCED_CORE_LIB", coreStaticLib.asFile.absolutePath)
     }
 
-    onlyIf("Theos is installed ($theosDir)") { file(theosDir.get()).isDirectory }
+    doFirst {
+        check(file(theosDir.get()).isDirectory) { "Theos is not installed at ${theosDir.get()}" }
+        val nativeBinary = if (isMacHost) coreFrameworkDir.file("ValencedCore").asFile else coreStaticLib.asFile
+        check(nativeBinary.isFile) { "Kotlin/Native output is missing: $nativeBinary" }
+        check(bundleDir.singleFile.resolve("valenced.bundle").isFile) { "Release JS bundle is missing" }
+    }
 }
 
 tasks.named("assemble") {

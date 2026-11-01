@@ -47,8 +47,9 @@ jobs:
   build-tweak:
     runs-on: macos-15
 
+    timeout-minutes: 30
     env:
-      DEB_DOWNLOADED: false
+      THEOS: ${{ github.workspace }}/theos
 
     steps:
       - name: Checkout code
@@ -57,19 +58,17 @@ jobs:
           submodules: true
 
       - name: Check cache
-        if: env.DEB_DOWNLOADED == 'false'
         run: echo upstream_heads=`git ls-remote https://github.com/theos/theos | head -n 1 | cut -f 1`-`git ls-remote https://github.com/theos/sdks | head -n 1 | cut -f 1` >> $GITHUB_ENV
 
       - name: Use cache
-        if: env.DEB_DOWNLOADED == 'false'
         id: cache
         uses: actions/cache@v4
         with:
           path: ${{ github.workspace }}/theos
-          key: ${{ runner.os }}-${{ env.upstream_heads }}
+          key: theos-v2-${{ runner.os }}-${{ runner.arch }}-${{ env.upstream_heads }}
 
       - name: Prepare Theos
-        if: env.DEB_DOWNLOADED == 'false'
+        if: steps.cache.outputs.cache-hit != 'true'
         uses: Randomblock1/theos-action@v1
 
       - name: Set GNU Make path
@@ -77,49 +76,71 @@ jobs:
           echo "PATH=$(brew --prefix make)/libexec/gnubin:$PATH" >> $GITHUB_ENV
 
       - name: Setup Java
-        if: env.DEB_DOWNLOADED == 'false'
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: 25
-          cache: gradle
+
+      - name: Setup Gradle cache
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          cache-read-only: ${{ github.event_name == 'pull_request' }}
+          cache-cleanup: on-success
 
       - name: Cache Kotlin/Native
-        if: env.DEB_DOWNLOADED == 'false'
-        uses: actions/cache@v4
+        id: konan-cache
+        uses: actions/cache/restore@v4
         with:
           path: ~/.konan
-          key: ${{ runner.os }}-konan-${{ hashFiles('gradle/libs.versions.toml') }}
-          restore-keys: ${{ runner.os }}-konan-
+          key: konan-v2-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('gradle/libs.versions.toml') }}
+          restore-keys: konan-v2-${{ runner.os }}-${{ runner.arch }}-
 
       - name: Setup Deno
-        if: env.DEB_DOWNLOADED == 'false'
         uses: denoland/setup-deno@v2
         with:
           deno-version-file: bundle/.dvmrc
+          cache: true
+          cache-hash: ${{ hashFiles('bundle/deno.lock', 'bundle/.dvmrc') }}
+
+      - name: Identify Apple toolchain
+        id: apple-toolchain
+        run: echo "digest=$(xcodebuild -version | shasum -a 256 | cut -d ' ' -f 1)" >> "$GITHUB_OUTPUT"
+
+      - name: Cache native compilation outputs
+        uses: actions/cache@v4
+        with:
+          path: core/build
+          key: core-v1-${{ runner.os }}-${{ runner.arch }}-${{ steps.apple-toolchain.outputs.digest }}-${{ hashFiles('core/**', 'gradle/**', '*.gradle.kts', 'gradle.properties', 'ios/Makefile') }}
+          restore-keys: core-v1-${{ runner.os }}-${{ runner.arch }}-${{ steps.apple-toolchain.outputs.digest }}-
 
       - name: Build packages
-        if: env.DEB_DOWNLOADED == 'false'
-        run: ./gradlew :ios:packageTweak
+        run: ./gradlew :ios:packageTweak --build-cache --parallel --stacktrace
 
-      - name: Set DEB path
+      - name: Preserve Kotlin toolchain downloads
+        if: ${{ always() && !cancelled() && steps.konan-cache.outputs.cache-hit != 'true' }}
+        uses: actions/cache/save@v4
+        with:
+          path: ~/.konan
+          key: ${{ steps.konan-cache.outputs.cache-primary-key }}
+
+      - name: Verify rootless package
         run: |
-          if [ "${{ env.DEB_DOWNLOADED }}" == "true" ]; then
-            echo "ROOTLESS_DEB_PATH=*-arm64.deb" >> $GITHUB_ENV
-          else
-            echo "ROOTLESS_DEB_PATH=ios/packages/*-arm64.deb" >> $GITHUB_ENV
-          fi
+          set -- ios/packages/*-arm64.deb
+          test "$#" -eq 1 && test -s "$1"
 
       - name: Upload rootless package
         uses: actions/upload-artifact@v4
         with:
           name: rootless package
-          path: ${{ env.ROOTLESS_DEB_PATH }}
+          path: ios/packages/*-arm64.deb
+          if-no-files-found: error
+          compression-level: 0
 
   build-ipa:
     if: inputs.caller_workflow != 'ci'
     runs-on: macos-15
     needs: build-tweak
+    timeout-minutes: 20
 
     steps:
       - name: Checkout code
@@ -178,8 +199,16 @@ jobs:
           echo "ROOTLESS_DEB_FILE_NAME=$ROOTLESS_DEB_FILE_NAME" >> $GITHUB_ENV
           echo "APP_NAME=$NAME" >> $GITHUB_ENV
 
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
       - name: Install cyan
-        run: pip install --force-reinstall https://github.com/asdfzxcvbn/pyzule-rw/archive/main.zip Pillow
+        run: |
+          python -m venv "$RUNNER_TEMP/cyan"
+          echo "$RUNNER_TEMP/cyan/bin" >> "$GITHUB_PATH"
+          "$RUNNER_TEMP/cyan/bin/pip" install --disable-pip-version-check https://github.com/asdfzxcvbn/pyzule-rw/archive/main.zip Pillow
 
       - name: Inject tweak and extension
         run: |
@@ -193,12 +222,14 @@ jobs:
         with:
           name: ipa
           path: ${{ env.APP_NAME }}.ipa
+          if-no-files-found: error
+          compression-level: 0
 
   release-app:
     if: |
       inputs.caller_workflow != 'ci' &&
       (github.event.inputs.release == 'true' || inputs.release == true)
-    runs-on: macos-15
+    runs-on: ubuntu-latest
     needs: build-ipa
     permissions:
       contents: write
@@ -222,19 +253,25 @@ jobs:
           merge-multiple: true
 
       - name: Extract Discord Version
+        env:
+          IS_TESTFLIGHT: ${{ inputs.is_testflight }}
         run: |
-          unzip -q ${{ env.APP_NAME }}.ipa
-          VERSION=$(plutil -p Payload/Discord.app/Info.plist | grep CFBundleShortVersionString | cut -d '"' -f 4)
-
-          if [[ "${{ github.event.inputs.is_testflight || inputs.is_testflight }}" == "true" ]]; then
-            BUILD=$(plutil -p Payload/Discord.app/Info.plist | grep CFBundleVersion | cut -d '"' -f 4)
-            VERSION="${VERSION}_${BUILD}"
-            echo "IS_PRERELEASE=true" >> $GITHUB_ENV
-          else
-            echo "IS_PRERELEASE=false" >> $GITHUB_ENV
-          fi
-
-          echo "DISCORD_VERSION=$VERSION" >> $GITHUB_ENV
+          python3 - <<'PY'
+          import glob, os, plistlib, zipfile
+          with zipfile.ZipFile(os.environ["APP_NAME"] + ".ipa") as archive:
+              paths = [n for n in archive.namelist() if n.startswith("Payload/") and n.count("/") == 2 and n.endswith(".app/Info.plist")]
+              if len(paths) != 1:
+                  raise ValueError("Expected one app Info.plist")
+              info = plistlib.loads(archive.read(paths[0]))
+          version = info["CFBundleShortVersionString"]
+          prerelease = os.environ["IS_TESTFLIGHT"].lower() == "true"
+          if prerelease:
+              version += "_" + info["CFBundleVersion"]
+          if not all(c.isalnum() or c in "._-" for c in version):
+              raise ValueError("Invalid release version")
+          with open(os.environ["GITHUB_ENV"], "a") as output:
+              output.write(f"DISCORD_VERSION={version}\nIS_PRERELEASE={str(prerelease).lower()}\n")
+          PY
 
       - name: Create GitHub Release
         id: create_release

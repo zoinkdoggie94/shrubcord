@@ -20,12 +20,18 @@ ValencedTweak_FRAMEWORKS = Foundation UIKit CoreGraphics CoreText CoreFoundation
 ValencedTweak_LDFLAGS = -undefined dynamic_lookup -lz
 
 ifneq ($(VALENCED_CORE_LIB),)
+ifeq ($(wildcard $(VALENCED_CORE_LIB)),)
+$(error Kotlin/Native archive not found: $(VALENCED_CORE_LIB))
+endif
 ValencedTweak_LDFLAGS += -Wl,-force_load,$(VALENCED_CORE_LIB)
 else
-ValencedTweak_FRAMEWORKS += ValencedCore
-ValencedTweak_CFLAGS += -F$(VALENCED_CORE_FW)
-ValencedTweak_CCFLAGS += -F$(VALENCED_CORE_FW)
-ValencedTweak_LDFLAGS += -F$(VALENCED_CORE_FW) -Wl,-force_load,$(VALENCED_CORE_FW)/ValencedCore
+ifeq ($(wildcard $(VALENCED_CORE_FW)/ValencedCore),)
+$(error Kotlin/Native framework binary not found: $(VALENCED_CORE_FW)/ValencedCore)
+endif
+# Static framework linked once through force_load, without a second -framework lookup.
+ValencedTweak_CFLAGS += -F$(dir $(VALENCED_CORE_FW))
+ValencedTweak_CCFLAGS += -F$(dir $(VALENCED_CORE_FW))
+ValencedTweak_LDFLAGS += -F$(dir $(VALENCED_CORE_FW)) -Wl,-force_load,$(VALENCED_CORE_FW)/ValencedCore
 endif
 
 include $(THEOS_MAKE_PATH)/tweak.mk
